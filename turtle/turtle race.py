@@ -52,20 +52,20 @@ player_two.shape("turtle")
 player_one.pendown()
 player_two.pendown()
 
-while score_red < 600 and score_green < 600:
-    jogar = input("press enter to continue")
+while score_red<600 and score_green<600:
+    play = input("press enter to continue")
     number = random.randint(1, 6)
-    distancia = number * 20
+    distance = number * 20
     player_one.forward(distancia)
     score_red += distancia
-    if score_red >= 600:
+    if score_red>=600:
         print("red wiins")
         break
-    jogar = input("press enter to continue")
+    play = input("press enter to continue")
     number = random.randint(1, 6)
-    distancia = number * 20
+    distance = number * 20
     player_two.forward(distancia)
-    score_green += distancia
+    score_green+=distancia
     if score_green >= 600:
         print("green wins")
         break

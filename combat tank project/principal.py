@@ -77,6 +77,7 @@ for a in range(number_of_tank):
         arena_color, 0)
     list_of_tank.append(tank)
     n += 1
+list_of_tank_original = list_of_tank.copy()
 
 # creat walls and obstacles
 up_Wall = pygame.draw.rect(screen, gray, (0, 60, 1150, 20))
@@ -111,6 +112,7 @@ victory = False
 clear_ball = False
 loop_victory = True
 invisible_mode = [False]
+list_of_losers = []
 animation_time *= 1000
 time_of_visibility = 0
 identify = 0
@@ -132,12 +134,17 @@ while loop_game:
 
     if not animation:
         if respawn:
+            list_of_tank = list_of_losers.copy()
+            list_of_losers.clear()
             for tank in list_of_tank:
                 tank.x_position = tank.x_origin
                 tank.y_position = tank.y_origin
                 tank.angle = 0
                 tank.tank_photo = pygame.transform.rotate(tank.tank_surface, tank.angle)
                 tank.vector = pygame.Vector2(0, -speed_tank)
+                tank.movement = False
+                tank.spin_right = False
+                tank.spin_left = False
             respawn = False
 
         for tank in list_of_tank:
@@ -228,7 +235,6 @@ while loop_game:
                         if ball.rect.colliderect(tank.tank_rect):
                             tank_enemy.point += 1
                             animation = True
-                            respawn = True
                             time = pygame.time.get_ticks()
                             identify = tank.id
                             clear_ball = True
@@ -251,6 +257,7 @@ while loop_game:
                 shoot_sound.play()
 
     if animation:
+        number_pop = 0
         while counter - time < animation_time:
             counter = pygame.time.get_ticks()
             screen.fill(arena_color)
@@ -260,10 +267,14 @@ while loop_game:
                 if tank.id == identify:
                     tank.angle += 20
                     tank.tank_photo = pygame.transform.rotate(tank.tank_surface, tank.angle)
+                    number_pop = number
                 screen.blit(tank.tank_photo, tank.tank_rect)
-                list_of_hud[number][0] = font.render(str(tank.point), True, list_of_color[number])
-                screen.blit(list_of_hud[number][0], list_of_hud[number][1])
+                list_of_hud[tank.id][0] = font.render(str(tank.point), True, list_of_color[tank.id])
+                screen.blit(list_of_hud[tank.id][0], list_of_hud[tank.id][1])
                 number += 1
+            for tank in list_of_losers:
+                list_of_hud[tank.id][0] = font.render(str(tank.point), True, list_of_color[tank.id])
+                screen.blit(list_of_hud[tank.id][0], list_of_hud[tank.id][1])
             # draw obstacles into animation
             for obstacle in list_of_obstacle:
                 obstacle_rect = pygame.draw.rect(screen, obstacle_color, obstacle)
@@ -273,6 +284,12 @@ while loop_game:
             clock.tick(60)
 
         animation = False
+        list_of_losers.append(list_of_tank[number_pop])
+        list_of_tank.pop(number_pop)
+        if len(list_of_tank) == 1:
+            list_of_losers.append(list_of_tank[0])
+            list_of_tank.clear()
+            respawn = True
 
     # draw walls and obstacles
     draw_walls(screen, obstacle_color, (up_Wall, down_Wall, right_Wall, left_Wall))
@@ -280,14 +297,15 @@ while loop_game:
         pygame.draw.rect(screen, obstacle_color, obstacle)
 
     # draw hud
-    number = 0
     for tank in list_of_tank:
-        list_of_hud[number][0] = font.render(str(tank.point), True, list_of_color[number])
-        screen.blit(list_of_hud[number][0], list_of_hud[number][1])
-        number += 1
+        list_of_hud[tank.id][0] = font.render(str(tank.point), True, list_of_color[tank.id])
+        screen.blit(list_of_hud[tank.id][0], list_of_hud[tank.id][1])
         if tank.point >= point_victory:
             loop_game = False
             ide = tank.id
+    for tank in list_of_losers:
+        list_of_hud[tank.id][0] = font.render(str(tank.point), True, list_of_color[tank.id])
+        screen.blit(list_of_hud[tank.id][0], list_of_hud[tank.id][1])
 
     pygame.display.flip()
     clock.tick(60)
